@@ -32,6 +32,19 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    // app/Models/User.php
+    public function isAdmin() {
+        return $this->role === 'admin';
+    }
+
+    public function isCustomer() {
+        return $this->role === 'customer';
+    }
+
+    public function rentals() {
+        return $this->hasMany(Rental::class);
+    }
+
 
     /**
      * Get the attributes that should be cast.
