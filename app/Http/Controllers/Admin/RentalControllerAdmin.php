@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\RentalConfirmed;
 use App\Mail\AdminRentalNotification;
 
-class RentalController extends Controller
+class RentalControllerAdmin extends Controller
 {
     public function store(Request $request)
     {
