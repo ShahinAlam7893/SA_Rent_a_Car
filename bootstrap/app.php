@@ -16,5 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
-    })->create();
+    $exceptions->render(function (Illuminate\Auth\AuthenticationException $e, Illuminate\Http\Request|null $request = null) {
+        // Safely check if $request is not null
+        if ($request && $request->is('api/*')) {
+            return response()->json([
+                'message' => 'User not authenticated. Access denied.'
+            ], \Symfony\Component\HttpFoundation\Response::HTTP_FORBIDDEN);
+        }
+
+        return redirect()->guest(route('login'));
+    });
+});
+
+    

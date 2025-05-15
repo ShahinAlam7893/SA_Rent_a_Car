@@ -1,20 +1,29 @@
 <?php
 
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 
-define('LARAVEL_START', microtime(true));
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'User not authenticated. Access denied.'
+                ], \Symfony\Component\HttpFoundation\Response::HTTP_FORBIDDEN);
+            }
 
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-    require $maintenance;
-}
-
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
-
-// Bootstrap Laravel and handle the request...
-/** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
-
-$app->handleRequest(Request::capture());
+            return redirect()->guest(route('login'));
+        });
+    })
+    ->create();
